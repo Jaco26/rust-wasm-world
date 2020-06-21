@@ -1,17 +1,18 @@
 import { Game } from 'pixel-person';
 import * as c from './constants/colors'
 import color from './utils/color'
+import InputHandler from './utils/input'
 
 const UNIVERSE_SIZES = [
   [60, 40, 12],
   [80, 56, 10],
   [128, 80, 8],
-  [172, 128, 6],
-  [230, 172, 4],
-  [256, 172, 4]
+  [172, 128, 5],
+  [256, 172, 4],
+  [512, 342, 2],
 ]
 
-const [WIDTH, HEIGHT, CELL_SIZE] = UNIVERSE_SIZES[5]
+const [WIDTH, HEIGHT, CELL_SIZE] = UNIVERSE_SIZES[3]
 
 
 /** @type {HTMLCanvasElement} */
@@ -22,39 +23,13 @@ layer1.height = HEIGHT * CELL_SIZE
 
 const layer1Ctx = layer1.getContext('2d')
 
-// const universe = Universe.new(WIDTH, HEIGHT)
 
-// universe.set_cell_color(2, 0, color.getIdx(c.GRAY_DARK_2))
-// universe.set_cell_color(2, 1, color.getIdx(c.GRAY_DARK_1))
-// universe.set_cell_color(2, 2, color.getIdx(c.GRAY))
-// universe.set_cell_color(2, 3, color.getIdx(c.GRAY_LIGHT_1))
-// universe.set_cell_color(2, 4, color.getIdx(c.GRAY_LIGHT_2))
-
-// universe.set_cell_color(3, 0, color.getIdx(c.BLUE_DARK_2))
-// universe.set_cell_color(3, 1, color.getIdx(c.BLUE_DARK_1))
-// universe.set_cell_color(3, 2, color.getIdx(c.BLUE))
-// universe.set_cell_color(3, 3, color.getIdx(c.BLUE_LIGHT_1))
-// universe.set_cell_color(3, 4, color.getIdx(c.BLUE_LIGHT_2))
-
-// universe.set_cell_color(4, 0, color.getIdx(c.RED_DARK_2))
-// universe.set_cell_color(4, 1, color.getIdx(c.RED_DARK_1))
-// universe.set_cell_color(4, 2, color.getIdx(c.RED))
-// universe.set_cell_color(4, 3, color.getIdx(c.RED_LIGHT_1))
-// universe.set_cell_color(4, 4, color.getIdx(c.RED_LIGHT_2))
-
-// universe.set_cell_color(5, 0, color.getIdx(c.GREEN_DARK_2))
-// universe.set_cell_color(5, 1, color.getIdx(c.GREEN_DARK_1))
-// universe.set_cell_color(5, 2, color.getIdx(c.GREEN))
-// universe.set_cell_color(5, 3, color.getIdx(c.GREEN_LIGHT_1))
-// universe.set_cell_color(5, 4, color.getIdx(c.GREEN_LIGHT_2))
-
-
+const inputHandler = new InputHandler()
 
 const game = Game.new(WIDTH, HEIGHT)
 
 function drawCells() {
   const cellsDelta = game.get_universe_cells_delta();
-  // console.log(cellsDelta)
   for (let c = 0; c < cellsDelta.length; c++) {
     const cellIdx = cellsDelta[c]
     const [row, col] = game.get_universe_row_col(cellIdx)
@@ -70,6 +45,7 @@ function drawCells() {
 
 function animationLoop() {
   drawCells()
+  game.handle_user_input(inputHandler.getPressedKeys())
   game.tick()
   requestAnimationFrame(animationLoop)
 }

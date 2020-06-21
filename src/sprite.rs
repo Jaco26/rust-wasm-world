@@ -46,8 +46,8 @@ impl Sprite {
     let body_start = center_index - (width * height) / 2;
     let body_end = center_index + (width * height) / 2;
     Ok(Sprite {
-      dx: -2,
-      dy: 3,
+      dx: 0,
+      dy: 0,
       width,
       height,
       center_index: center_index as usize,
@@ -70,7 +70,7 @@ impl Sprite {
     self.dx
   }
   pub fn set_dx(&mut self, dx: i32) {
-    self.dx += dx;
+    self.dx = dx;
   }
   pub fn center_index(&self) -> usize {
     self.center_index
