@@ -63,15 +63,15 @@ impl Sprite {
   pub fn dy(&self) -> i32 {
     self.dy
   }
-  pub fn set_dy(&mut self, dy: i32) {
-    self.dy = dy;
-  }
+  // pub fn set_dy(&mut self, dy: i32) {
+  //   self.dy = dy;
+  // }
   pub fn dx(&self) -> i32 {
     self.dx
   }
-  pub fn set_dx(&mut self, dx: i32) {
-    self.dx = dx;
-  }
+  // pub fn set_dx(&mut self, dx: i32) {
+  //   self.dx = dx;
+  // }
   pub fn center_index(&self) -> usize {
     self.center_index
   }
@@ -105,5 +105,37 @@ impl Sprite {
 impl Sprite {
   pub fn body(&self) -> &Vec<SpriteCell> {
     &self.body
+  }
+}
+
+
+pub trait GameActor {
+  fn move_up(&mut self);
+  fn move_down(&mut self);
+  fn move_left(&mut self);
+  fn move_right(&mut self);
+  fn cancel_dx(&mut self);
+  fn cancel_dy(&mut self);
+}
+
+
+impl GameActor for Sprite {
+  fn move_up(&mut self) {
+    self.dy = -1;
+  }
+  fn move_right(&mut self) {
+    self.dx = 1;
+  }
+  fn move_down(&mut self) {
+    self.dy = 1;
+  }
+  fn move_left(&mut self) {
+    self.dx = -1;
+  }
+  fn cancel_dx(&mut self) {
+    self.dx = 0;
+  }
+  fn cancel_dy(&mut self) {
+    self.dy = 0;
   }
 }
