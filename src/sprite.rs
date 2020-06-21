@@ -1,4 +1,5 @@
 use wasm_bindgen::prelude::*;
+use crate::universe::Universe;
 
 #[wasm_bindgen]
 #[derive(Debug)]
@@ -32,8 +33,8 @@ pub struct Sprite {
   height: u32,
   center_index: usize,
   body: Vec<SpriteCell>,
-  dx: u32,
-  dy: u32,
+  dx: i32,
+  dy: i32,
 }
 
 #[wasm_bindgen]
@@ -45,24 +46,30 @@ impl Sprite {
     let body_start = center_index - (width * height) / 2;
     let body_end = center_index + (width * height) / 2;
     Ok(Sprite {
-      dx: 1,
-      dy: 0,
+      dx: -2,
+      dy: 3,
       width,
       height,
       center_index: center_index as usize,
-      body: (body_start..body_end).map(|x| SpriteCell::new(2, x as usize)).collect()
+      body: (body_start..body_end).map(|x| SpriteCell::new(9, x as usize)).collect()
     })
   }
-  pub fn dy(&self) -> u32 {
+  pub fn width(&self) -> u32 {
+    self.width
+  }
+  pub fn height(&self) -> u32 {
+    self.height
+  }
+  pub fn dy(&self) -> i32 {
     self.dy
   }
-  pub fn set_dy(&mut self, dy: u32) {
+  pub fn set_dy(&mut self, dy: i32) {
     self.dy = dy;
   }
-  pub fn dx(&self) -> u32 {
+  pub fn dx(&self) -> i32 {
     self.dx
   }
-  pub fn set_dx(&mut self, dx: u32) {
+  pub fn set_dx(&mut self, dx: i32) {
     self.dx += dx;
   }
   pub fn center_index(&self) -> usize {
@@ -71,21 +78,26 @@ impl Sprite {
   pub fn set_center_idx(&mut self, idx: usize) {
     self.center_index = idx;
   }
-  /// Get the range of `Universe` cell indexes that the `Sprite.body` currently occupies
-  fn get_body_range(&self) -> std::ops::Range<usize> {
-    let center = self.center_index;
-    let len_body_half = ((self.width * self.height) / 2) as usize;
-    (center - len_body_half)..(center + len_body_half) + 1
+  fn get_body_cell_indeces(&self, universe: &Universe) -> Vec<usize> {
+    let (center_row, center_col) = universe.get_row_and_col(self.center_index);
+    let cols_range = (center_col - self.width / 2)..(center_col + self.width / 2) + 1;
+    let rows_range = (center_row - self.height / 2)..(center_row + self.height / 2) + 1;
+    let mut rv = Vec::new();
+    for row in rows_range {
+      for col in cols_range.clone() {
+        let row = row % universe.height();
+        let col = col % universe.width();
+        rv.push(universe.get_index(row, col));
+      }
+    }
+    rv
   }
   /// Update the `Sprite.body` cell `idx`s so that the body is centered on the `Sprite.center_index`
-  pub fn center_self(&mut self) {
-    self.body = self.get_body_range().map(|x| SpriteCell::new(2, x)).collect();
-  }
-  /// Accept a
-  fn apply_color_frame(&mut self, frame: Vec<u8>) {
-    for (i, body_idx) in self.get_body_range().enumerate() {
-      self.body[body_idx].clr_idx = frame[i];
-    }
+  pub fn center_self(&mut self, universe: &Universe) {
+    self.body = self.get_body_cell_indeces(universe)
+      .iter()
+      .map(|&x| SpriteCell::new(9, x))
+      .collect();
   }
 }
 

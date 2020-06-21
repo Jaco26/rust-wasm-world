@@ -100,7 +100,7 @@ impl Universe {
       self.cells[c.pos_idx].color_index = c.clr_idx;
     }
   }
-  pub fn compare(&mut self, snapshot: Vec<Cell>) {
+  pub fn diff_frames(&mut self, snapshot: Vec<Cell>) {
     let idxs = (0..self.cells.len()).map(|x| x);
     let zip = snapshot.iter().zip(self.cells.iter()).zip(idxs);
     self.cells_delta = zip.fold(Vec::<usize>::new(), |mut acc, ((old, new), idx)| {

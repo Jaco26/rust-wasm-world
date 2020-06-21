@@ -2,15 +2,17 @@ import { Game } from 'pixel-person';
 import * as c from './constants/colors'
 import color from './utils/color'
 
-// const WIDTH = 128
-// const HEIGHT = 80
+const UNIVERSE_SIZES = [
+  [60, 40, 12],
+  [80, 56, 10],
+  [128, 80, 8],
+  [172, 128, 6],
+  [230, 172, 4],
+  [256, 172, 4]
+]
 
-// const WIDTH = 172
-// const HEIGHT = 128
+const [WIDTH, HEIGHT, CELL_SIZE] = UNIVERSE_SIZES[5]
 
-const WIDTH = 230
-const HEIGHT = 172
-const CELL_SIZE = 4
 
 /** @type {HTMLCanvasElement} */
 const layer1 = document.getElementById('layer-1')
@@ -52,6 +54,7 @@ const game = Game.new(WIDTH, HEIGHT)
 
 function drawCells() {
   const cellsDelta = game.get_universe_cells_delta();
+  // console.log(cellsDelta)
   for (let c = 0; c < cellsDelta.length; c++) {
     const cellIdx = cellsDelta[c]
     const [row, col] = game.get_universe_row_col(cellIdx)

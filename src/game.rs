@@ -19,7 +19,7 @@ impl Game {
 
     let universe = Universe::new(width, height);
 
-    let sprite: Sprite = Sprite::new(3, 3, universe.get_index(4, 6) as u32).unwrap();
+    let sprite: Sprite = Sprite::new(3, 3, universe.get_index(10, 10) as u32).unwrap();
 
     Game { universe, sprite }
   }
@@ -34,7 +34,7 @@ impl Game {
     self.universe.map_sprite(&self.sprite);
     // compare old universe cell states to new universe cell states,
     // returning only the indexes of the universe cells that changed
-    self.universe.compare(previous);
+    self.universe.diff_frames(previous);
   }
   pub fn get_universe_cells_delta(&self) -> JsValue {
     JsValue::from_serde(self.universe.cells_delta()).unwrap()
