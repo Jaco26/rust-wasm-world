@@ -53,82 +53,35 @@ impl Command for CancelDy {
   }
 }
 
-#[derive(Copy, Clone, Eq, PartialEq)]
-enum Button {
-  Up = 38,
-  Right = 39,
-  Down = 40,
-  Left = 37,
-}
+struct Button(Box<&'static dyn Command>);
 
-#[derive(Debug)]
-pub struct Commands {
-  move_up: MoveUp,
-  move_right: MoveRight,
-  move_down: MoveDown,
-  move_left: MoveLeft,
-  cancel_dx: CancelDx,
-  cancel_dy: CancelDy,
-}
-
-#[derive(Debug)]
 pub struct InputHandler {
-  pressed_keys: Vec<u32>,
-  commands: Commands,
+  buttons: std::collections::HashMap<u32, Button>
 }
+
 
 impl InputHandler {
   pub fn new() -> InputHandler {
-    InputHandler {
-      pressed_keys: Vec::new(),
-      commands: Commands {
-        move_up: MoveUp,
-        move_right: MoveRight,
-        move_down: MoveDown,
-        move_left: MoveLeft,
-        cancel_dx: CancelDx,
-        cancel_dy: CancelDy,
-      },
-    }
+    let mut buttons = std::collections::HashMap::new();
+    buttons.insert(38, Button(Box::new(&MoveUp)));
+    buttons.insert(39, Button(Box::new(&MoveRight)));
+    buttons.insert(40, Button(Box::new(&MoveDown)));
+    buttons.insert(37, Button(Box::new(&MoveLeft)));
+
+    InputHandler { buttons }
   }
+  
   pub fn handle_input(&mut self, pressed_keys: Vec<u32>) -> Vec<Box<&dyn Command>> {
-    self.pressed_keys = pressed_keys;
+    let mut command_stack = pressed_keys.iter().fold(Vec::new(), |mut acc, key_code| {
+      if let Some(button) = self.buttons.get(key_code) {
+        acc.push(button.0.clone());
+      }
+      acc
+    });
 
-    let mut commands: Vec<Box<&dyn Command>> = Vec::new();
+    if !pressed_keys.contains(&38) && !pressed_keys.contains(&40) { command_stack.push(Box::new(&CancelDy)) }
+    if !pressed_keys.contains(&37) && !pressed_keys.contains(&39) { command_stack.push(Box::new(&CancelDx)) }
 
-    let up_pressed = self.is_pressed(Button::Up);
-    let right_pressed = self.is_pressed(Button::Right);
-    let down_pressed = self.is_pressed(Button::Down);
-    let left_pressed = self.is_pressed(Button::Left);
-
-    match up_pressed {
-      true => commands.push(Box::new(&self.commands.move_up)),
-      false if !down_pressed => commands.push(Box::new(&self.commands.cancel_dy)),
-      _ => {}
-    };
-
-    match right_pressed {
-      true => commands.push(Box::new(&self.commands.move_right)),
-      false if !left_pressed => commands.push(Box::new(&self.commands.cancel_dx)),
-      _ => {},
-    };
-
-    match down_pressed {
-      true => commands.push(Box::new(&self.commands.move_down)),
-      false if !up_pressed => commands.push(Box::new(&self.commands.cancel_dy)),
-      _ => {}
-    };
-
-    match left_pressed {
-      true => commands.push(Box::new(&self.commands.move_left)),
-      false if !right_pressed => commands.push(Box::new(&self.commands.cancel_dx)),
-      _ => {}
-    };
-
-    commands
-  }
-  fn is_pressed(&self, button: Button) -> bool {
-    let btn = button as u32;
-    self.pressed_keys.contains(&btn)
+    command_stack
   }
 }

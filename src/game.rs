@@ -6,9 +6,16 @@ use crate::universe::Universe;
 use crate::sprite::Sprite;
 use crate::user_input::{InputHandler};
 
+#[derive(Serialize, Deserialize, Debug)]
+struct SpriteConfig {
+  width: u32,
+  height: u32,
+  center_row: u32,
+  center_col: u32,
+}
+
 
 #[wasm_bindgen]
-#[derive(Debug)]
 pub struct Game {
   universe: Universe,
   sprite: Sprite,
@@ -17,12 +24,18 @@ pub struct Game {
 
 #[wasm_bindgen]
 impl Game {
-  pub fn new(width: u32, height: u32) -> Game {
+  pub fn new(width: u32, height: u32, sprite_config: &JsValue) -> Game {
     utils::set_panic_hook();
+
+    let sprite_config: SpriteConfig = sprite_config.into_serde().unwrap();
 
     let universe = Universe::new(width, height);
 
-    let sprite: Sprite = Sprite::new(3, 5, universe.get_index(10, 10) as u32).unwrap();
+    let sprite: Sprite = Sprite::new(
+      sprite_config.width,
+      sprite_config.height,
+      universe.get_index(sprite_config.center_row, sprite_config.center_col) as u32
+    ).unwrap();
 
     Game { universe, sprite, input_handler: InputHandler::new() }
   }

@@ -12,7 +12,7 @@ const UNIVERSE_SIZES = [
   [512, 342, 2],
 ]
 
-const [WIDTH, HEIGHT, CELL_SIZE] = UNIVERSE_SIZES[3]
+const [WIDTH, HEIGHT, CELL_SIZE] = UNIVERSE_SIZES[4]
 
 
 /** @type {HTMLCanvasElement} */
@@ -26,10 +26,16 @@ const layer1Ctx = layer1.getContext('2d')
 
 const inputHandler = new InputHandler()
 
-const game = Game.new(WIDTH, HEIGHT)
+const game = Game.new(WIDTH, HEIGHT, {
+  width: 5,
+  height: 9,
+  center_row: 30,
+  center_col: 100,
+})
 
 function drawCells() {
   const cellsDelta = game.get_universe_cells_delta();
+
   for (let c = 0; c < cellsDelta.length; c++) {
     const cellIdx = cellsDelta[c]
     const [row, col] = game.get_universe_row_col(cellIdx)
