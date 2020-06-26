@@ -1,87 +1,70 @@
-use crate::sprite::{Sprite, GameActor};
 
-pub trait Command {
-  fn execute(&self, actor: &mut Sprite);
+#[derive(Debug, PartialEq)]
+pub enum Button {
+  UpArrow,
+  RightArrow,
+  DownArrow,
+  LeftArrow,
+  Spacebar,
+  Return,
+  Shift,
+  Other,
 }
 
-
-#[derive(Debug)]
-struct MoveUp;
-impl Command for MoveUp {
-  fn execute(&self, actor: &mut Sprite) {
-    actor.move_up();
+impl Button {
+  pub fn from_key_code(key_code: u32) -> Self {
+    match key_code {
+      38 => Self::UpArrow,
+      39 => Self::RightArrow,
+      40 => Self::DownArrow,
+      37 => Self::LeftArrow,
+      32 => Self::Spacebar,
+      16 => Self::Shift,
+      13 => Self::Return,
+      _ => Self::Other,
+    }
   }
 }
 
-#[derive(Debug)]
-struct MoveRight;
-impl Command for MoveRight {
-  fn execute(&self, actor: &mut Sprite) {
-    actor.move_right();
-  }
-}
 
-#[derive(Debug)]
-struct MoveDown;
-impl Command for MoveDown {
-  fn execute(&self, actor: &mut Sprite) {
-    actor.move_down();
-  }
-}
-
-#[derive(Debug)]
-struct MoveLeft;
-impl Command for MoveLeft {
-  fn execute(&self, actor: &mut Sprite) {
-    actor.move_left();
-  }
-}
-
-#[derive(Debug)]
-struct CancelDx;
-impl Command for CancelDx {
-  fn execute(&self, actor: &mut Sprite) {
-    actor.cancel_dx();
-  }
-}
-
-#[derive(Debug)]
-struct CancelDy;
-impl Command for CancelDy {
-  fn execute(&self, actor: &mut Sprite) {
-    actor.cancel_dy();
-  }
-}
-
-struct Button(Box<&'static dyn Command>);
-
-pub struct InputHandler {
-  buttons: std::collections::HashMap<u32, Button>
+pub struct UserInput {
+  pub pressed_keys: Vec<Button>,
 }
 
 
-impl InputHandler {
-  pub fn new() -> InputHandler {
-    let mut buttons = std::collections::HashMap::new();
-    buttons.insert(38, Button(Box::new(&MoveUp)));
-    buttons.insert(39, Button(Box::new(&MoveRight)));
-    buttons.insert(40, Button(Box::new(&MoveDown)));
-    buttons.insert(37, Button(Box::new(&MoveLeft)));
-
-    InputHandler { buttons }
+impl UserInput {
+  pub fn new(pressed_keys: Vec<u32>) -> UserInput {
+    UserInput { 
+      pressed_keys: pressed_keys
+        .iter()
+        .map(|x| Button::from_key_code(*x))
+        .collect(),
+    }
   }
-  
-  pub fn handle_input(&mut self, pressed_keys: Vec<u32>) -> Vec<Box<&dyn Command>> {
-    let mut command_stack = pressed_keys.iter().fold(Vec::new(), |mut acc, key_code| {
-      if let Some(button) = self.buttons.get(key_code) {
-        acc.push(button.0.clone());
+
+  fn index_of(&self, key: &Button) -> Option<usize> {
+    self.pressed_keys.iter().position(|x| x == key)
+  }
+
+  pub fn has(&self, btn: &Button) -> bool {
+    self.pressed_keys.contains(&btn)
+  }
+
+  /// returns `true` if `first` has a smaller index than `second` in `self.pressed_keys`
+  pub fn has_order(&self, first: &Button, second: &Button) -> bool {
+    if let Some(first_idx) = self.index_of(&first) {
+      if let Some(second_idx) = self.index_of(&second) {
+        return first_idx < second_idx;
       }
-      acc
-    });
+    }
+    false
+  }
 
-    if !pressed_keys.contains(&38) && !pressed_keys.contains(&40) { command_stack.push(Box::new(&CancelDy)) }
-    if !pressed_keys.contains(&37) && !pressed_keys.contains(&39) { command_stack.push(Box::new(&CancelDx)) }
+  pub fn has_any(&self, keys: Vec<&Button>) -> bool {
+    keys.iter().any(|key| self.pressed_keys.contains(key))
+  }
 
-    command_stack
+  pub fn has_all(&self, keys: Vec<&Button>) -> bool {
+    keys.iter().all(|key| self.pressed_keys.contains(key))
   }
 }

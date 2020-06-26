@@ -1,9 +1,8 @@
-use wasm_bindgen::prelude::*;
+// use wasm_bindgen::prelude::*;
 use crate::sprite::Sprite;
 use crate::universe::Universe;
 
 
-#[wasm_bindgen]
 pub fn update_position(sprite: &mut Sprite, universe: &Universe) {
   let (center_row, center_col) = universe.get_row_and_col(sprite.center_index());
   

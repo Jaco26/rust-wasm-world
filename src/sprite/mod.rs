@@ -1,23 +1,16 @@
+pub mod command;
+
+
 use wasm_bindgen::prelude::*;
+use crate::prelude::GameActor;
 use crate::universe::Universe;
 
-#[wasm_bindgen]
-#[derive(Debug)]
-pub enum Direction {
-  Up,
-  Right,
-  Down,
-  Left,
-}
-
-#[wasm_bindgen]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SpriteCell {
   pub clr_idx: u8,
   pub pos_idx: usize,
 }
 
-#[wasm_bindgen]
 impl SpriteCell {
   pub fn new(clr_idx: u8, pos_idx: usize) -> SpriteCell {
     SpriteCell { clr_idx, pos_idx }
@@ -25,7 +18,6 @@ impl SpriteCell {
 }
 
 
-#[wasm_bindgen]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 /// A `Sprite` occupies a subset of cells in a `Universe`
 pub struct Sprite {
@@ -35,9 +27,9 @@ pub struct Sprite {
   body: Vec<SpriteCell>,
   dx: i32,
   dy: i32,
+  animation_frame: u8,
 }
 
-#[wasm_bindgen]
 impl Sprite {
   pub fn new(width: u32, height: u32, center_index: u32) -> Result<Sprite, JsValue> {
     if width * height % 2 == 0 {
@@ -46,6 +38,7 @@ impl Sprite {
     let body_start = center_index - (width * height) / 2;
     let body_end = center_index + (width * height) / 2;
     Ok(Sprite {
+      animation_frame: 0,
       dx: 0,
       dy: 0,
       width,
@@ -93,6 +86,10 @@ impl Sprite {
       .map(|&x| SpriteCell::new(9, x))
       .collect();
   }
+
+  pub fn update(&mut self) {
+    
+  }
 }
 
 
@@ -102,15 +99,6 @@ impl Sprite {
   }
 }
 
-
-pub trait GameActor {
-  fn move_up(&mut self);
-  fn move_down(&mut self);
-  fn move_left(&mut self);
-  fn move_right(&mut self);
-  fn cancel_dx(&mut self);
-  fn cancel_dy(&mut self);
-}
 
 
 impl GameActor for Sprite {

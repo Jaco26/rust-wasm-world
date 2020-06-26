@@ -3,8 +3,16 @@ use wasm_bindgen::prelude::*;
 use crate::utils;
 use crate::physics;
 use crate::universe::Universe;
-use crate::sprite::Sprite;
-use crate::user_input::{InputHandler};
+use crate::sprite::{Sprite, command};
+use crate::user_input::{
+  UserInput,
+  Button,
+  // InputHandler,
+  // parse_user_input,
+  // interpret_user_input,
+  // KeyCode,
+};
+use crate::prelude::*;
 
 #[derive(Serialize, Deserialize, Debug)]
 struct SpriteConfig {
@@ -19,7 +27,7 @@ struct SpriteConfig {
 pub struct Game {
   universe: Universe,
   sprite: Sprite,
-  input_handler: InputHandler,
+  user_input: UserInput,
 }
 
 #[wasm_bindgen]
@@ -37,7 +45,7 @@ impl Game {
       universe.get_index(sprite_config.center_row, sprite_config.center_col) as u32
     ).unwrap();
 
-    Game { universe, sprite, input_handler: InputHandler::new() }
+    Game { universe, sprite, user_input: UserInput::new(vec![]) }
   }
   pub fn tick(&mut self) {
     // save snapshot of universe cell state
@@ -46,14 +54,59 @@ impl Game {
     self.universe.blank_slate();
     // update sprite states
     physics::update_position(&mut self.sprite, &self.universe);
+    
     // map sprite cell states onto universe cells
     self.universe.map_sprite(&self.sprite);
     // compare old universe cell states to new universe cell states,
     // returning only the indexes of the universe cells that changed
     self.universe.diff_frames(previous);
   }
+
   pub fn handle_user_input(&mut self, pressed_keys: &JsValue) {
-    let commands = self.input_handler.handle_input(pressed_keys.into_serde().unwrap());
+    let pressed_keys: PressedKeys = pressed_keys.into_serde().unwrap();
+    let pressed_keys = pressed_keys.0;
+    self.user_input = UserInput::new(pressed_keys);
+
+    let mut commands = Vec::new();
+
+    let mut handle_arrow_keys = |
+      b1: &Button,
+      b2: &Button,
+      c1: Box<dyn Command>,
+      c2: Box<dyn Command>,
+      cancel: Box<dyn Command>
+    | {
+      if self.user_input.has_all(vec![b1, b2]) {
+        if self.user_input.has_order(b1, b2) {
+          commands.push(c2);
+        } else {
+          commands.push(c1);
+        }
+      } else if self.user_input.has(b1) {
+        commands.push(c1);
+      } else if self.user_input.has(b2) {
+        commands.push(c2);
+      } else {
+        commands.push(cancel);
+      }
+    };
+
+    handle_arrow_keys(
+      &Button::RightArrow,
+      &Button::LeftArrow,
+      Box::new(command::MoveRight),
+      Box::new(command::MoveLeft),
+      Box::new(command::CancelDx),
+    );
+
+    handle_arrow_keys(
+      &Button::UpArrow,
+      &Button::DownArrow,
+      Box::new(command::MoveUp),
+      Box::new(command::MoveDown),
+      Box::new(command::CancelDy),
+    );
+
     for command in commands {
       command.execute(&mut self.sprite);
     }
