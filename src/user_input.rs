@@ -60,10 +60,6 @@ impl UserInput {
     false
   }
 
-  pub fn has_any(&self, keys: Vec<&Button>) -> bool {
-    keys.iter().any(|key| self.pressed_keys.contains(key))
-  }
-
   pub fn has_all(&self, keys: Vec<&Button>) -> bool {
     keys.iter().all(|key| self.pressed_keys.contains(key))
   }

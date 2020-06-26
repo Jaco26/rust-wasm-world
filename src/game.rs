@@ -3,15 +3,14 @@ use wasm_bindgen::prelude::*;
 use crate::utils;
 use crate::physics;
 use crate::universe::Universe;
-use crate::sprite::{Sprite, command};
-use crate::user_input::{
-  UserInput,
-  Button,
-  // InputHandler,
-  // parse_user_input,
-  // interpret_user_input,
-  // KeyCode,
+use crate::sprite::{
+  Sprite,
+  command_dispatchers::{
+    MovementX,
+    MovementY,
+  }
 };
+use crate::user_input::UserInput;
 use crate::prelude::*;
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -67,47 +66,10 @@ impl Game {
     let pressed_keys = pressed_keys.0;
     self.user_input = UserInput::new(pressed_keys);
 
-    let mut commands = Vec::new();
-
-    let mut handle_arrow_keys = |
-      b1: &Button,
-      b2: &Button,
-      c1: Box<dyn Command>,
-      c2: Box<dyn Command>,
-      cancel: Box<dyn Command>
-    | {
-      if self.user_input.has_all(vec![b1, b2]) {
-        if self.user_input.has_order(b1, b2) {
-          commands.push(c2);
-        } else {
-          commands.push(c1);
-        }
-      } else if self.user_input.has(b1) {
-        commands.push(c1);
-      } else if self.user_input.has(b2) {
-        commands.push(c2);
-      } else {
-        commands.push(cancel);
-      }
-    };
-
-    handle_arrow_keys(
-      &Button::RightArrow,
-      &Button::LeftArrow,
-      Box::new(command::MoveRight),
-      Box::new(command::MoveLeft),
-      Box::new(command::CancelDx),
-    );
-
-    handle_arrow_keys(
-      &Button::UpArrow,
-      &Button::DownArrow,
-      Box::new(command::MoveUp),
-      Box::new(command::MoveDown),
-      Box::new(command::CancelDy),
-    );
-
-    for command in commands {
+    for command in MovementX.dispatch(&self.user_input) {
+      command.execute(&mut self.sprite);
+    }
+    for command in MovementY.dispatch(&self.user_input) {
       command.execute(&mut self.sprite);
     }
   }

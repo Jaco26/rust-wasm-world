@@ -1,4 +1,5 @@
-pub mod command;
+pub mod commands;
+pub mod command_dispatchers;
 
 
 use wasm_bindgen::prelude::*;

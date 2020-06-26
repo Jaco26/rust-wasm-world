@@ -1,4 +1,5 @@
 use crate::sprite::Sprite;
+use crate::user_input::UserInput;
 
 pub trait GameActor {
   fn move_up(&mut self);
@@ -9,10 +10,10 @@ pub trait GameActor {
   fn cancel_dy(&mut self);
 }
 
-// pub trait SpriteCommand {
-//   fn execute(&self, actor: &mut Sprite);
-// }
-
 pub trait Command {
   fn execute(&self, actor: &mut Sprite);
+}
+
+pub trait CommandDispatcher {
+  fn dispatch(&self, user_input: &UserInput) -> Vec<Box<dyn Command>>;
 }
