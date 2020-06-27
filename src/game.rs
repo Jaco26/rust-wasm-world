@@ -5,10 +5,7 @@ use crate::physics;
 use crate::universe::Universe;
 use crate::sprite::{
   Sprite,
-  command_dispatchers::{
-    MovementX,
-    MovementY,
-  }
+  command_dispatchers::MovementXY,
 };
 use crate::user_input::UserInput;
 use crate::prelude::*;
@@ -66,10 +63,7 @@ impl Game {
     let pressed_keys = pressed_keys.0;
     self.user_input = UserInput::new(pressed_keys);
 
-    for command in MovementX.dispatch(&self.user_input) {
-      command.execute(&mut self.sprite);
-    }
-    for command in MovementY.dispatch(&self.user_input) {
+    for command in MovementXY.dispatch(&self.user_input) {
       command.execute(&mut self.sprite);
     }
   }
